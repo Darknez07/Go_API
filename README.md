@@ -1,6 +1,6 @@
 # Go_API
 POST to meetings is complete
-The date fomat is **DD/MM/YYYY HH:MM:SS**
+The date fomat is **DD/MM/YYYY HH:MM:SS**(24 hour format)
 or else error will be given
 MongoDB also checks for any meeting collisions
 Also retrival is well configured but json Output is not there
