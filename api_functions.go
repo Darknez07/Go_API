@@ -102,12 +102,10 @@ func CheckBooking(meeting Meeting) bool {
 	cur.All(ctx, &out)
 	fmt.Println(out)
 	if len(out) == 0 {
+		return true
+	}else{
 		return false
 	}
-	for _, s := range out {
-		fmt.Println(s["participants"])
-	}
-	return true
 }
 
 func FindMeeting(s int) []bson.M{
