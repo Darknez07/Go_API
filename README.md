@@ -9,3 +9,4 @@ No external Package is used
 Also the GET request of meeting by id and meeting by start and end date is done
 But wasn't able to convert to JSON output
 The time did not permit me to write test cases
+To run Do **go run .** in git directory
