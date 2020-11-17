@@ -9,4 +9,7 @@ or else error will be given</li>
 <li>No external Package is used</li>
 <li>Also the GET request of meeting by id and meeting by start and end date is done</li>
 <li>But wasn't able to convert to JSON output</li>
+  <li>Meeting Id is improved</li>
+  <li> Currently working on  all meetings function</li>
+  </ol>
 <br>To run the program Do <h4>**go run .**</h4> in git directory
