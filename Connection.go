@@ -6,10 +6,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"reflect"
+
+	// "reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	// "go.mongodb.org/mongo-driver/bson"
 	// "go.mongodb.org/mongo-driver/mongo"
 	// "go.mongodb.org/mongo-driver/mongo/options"
@@ -100,7 +105,7 @@ type test_struct struct {
 	Timestamp time.Time
 }
 
-var x = getLatestId() +  1
+var x = getLatestId() + 1
 
 func meetings(rw http.ResponseWriter, request *http.Request) {
 	switch request.Method {
@@ -153,9 +158,9 @@ func meetings(rw http.ResponseWriter, request *http.Request) {
 		b, _ := json.Marshal(&meets)
 		if !errors {
 			x = ScheduleMeet(meet)
-			if x == -1{
-				fmt.Fprintf(rw,JsonOut(`{"Message":"The meeting already exist or participant is not free"}`))
-			}else{
+			if x == -1 {
+				fmt.Fprintf(rw, JsonOut(`{"Message":"The meeting already exist or participant is not free"}`))
+			} else {
 				fmt.Fprintf(rw, string(b))
 			}
 		}
@@ -165,22 +170,158 @@ func meetings(rw http.ResponseWriter, request *http.Request) {
 		starts := Date{}
 		end := "Start"
 		start := "Start"
-		num,err := strconv.Atoi(strings.Split(request.URL.Path,"/")[2])
+		num, err := strconv.Atoi(strings.Split(request.URL.Path, "/")[2])
 		start = request.URL.Query().Get("start")
 		end = request.URL.Query().Get("end")
 		ends = toDate(end)
 		starts = toDate(start)
-		if err == nil{
-			x:= FindMeeting(num)
+		var final string
+		if err == nil {
+			x := FindMeeting(num)
 			if x != nil {
-				fmt.Println(json.Marshal(x))
+				for _, q := range x {
+					// fmt.Println(q)
+					for ll, s := range q {
+						// fmt.Println(reflect.TypeOf(s))
+						// fmt.Println(f)
+						switch t := s.(type) {
+						case primitive.M:
+							final+=`, "`+ll+`" : [{`
+							for label, nw := range s.(primitive.M){
+								// fmt.Printf(label)
+								// fmt.Println(label, nw)
+								// fmt.Println(reflect.TypeOf(nw))
+								// fmt.Println(label)
+								final+=`"`+label+`" : `+ strconv.Itoa(int(nw.(int32)))+`, `
+							}
+							final = final[:len(final) - 2]
+							final+=`}], `
+							final = final[:len(final) - 2]
+						case primitive.A:
+							fmt.Println("Idhar")
+							final += `"Participants" : [`
+							for last, w := range s.(primitive.A) {
+								final += `{ `
+								for mj, y := range w.(primitive.M) {
+									fmt.Println(reflect.TypeOf(mj), "KJ")
+									switch h := y.(type) {
+									case int32:
+										f := y.(int32)
+										final += `"RSVP" : ` + `"`+revrsvp[int(f)]+`"` + `, `
+									case string:
+										f := y.(string)
+										final += `"`+mj +`" : "` +f +`", `
+									default:
+										fmt.Println(h)
+									}
+								}
+								final = final[:len(final) - 2]
+								if last == len(s.(primitive.A))-1 {
+									final += `} `
+								} else {
+									final += `}, `
+								}
+							}
+							final += `] `
+						case int32:
+							f := s.(int32)
+							fmt.Println(strconv.Itoa(int(f)))
+							final += `"Id" : ` +strconv.Itoa(int(f)) +`, `
+						case string:
+							fmt.Println(s.(string))
+							final += `"Title" : "`+s.(string)+`", `
+						case primitive.ObjectID:
+							continue
+						case primitive.DateTime:
+							fmt.Println(s)
+						default:
+							fmt.Println("Default")
+							fmt.Println(t)
+						}
+					}
+				}
+				fmt.Fprintf(rw, JsonOut(`{`+final+`}`))
+			}else if x == nil{
+			fmt.Fprintf(rw, JsonOut(`{"Message":"The Format of Request Not correct"}`))
 			}
-		}else {
-			if starts.Day !=0 && ends.Day != 0 {
+		} else {
+			if starts.Day != 0 && ends.Day != 0 {
 				FindDatedMeeting(starts, ends)
+			} else {
+				tt:= allMeetings()
+				if tt != nil {
+					for _, q := range tt {
+						final = ""
+						// fmt.Println(q)
+						for ll, s := range q {
+							// fmt.Println(reflect.TypeOf(s))
+							// fmt.Println(f)
+							switch t := s.(type) {
+							case primitive.M:
+								final+=`, "`+ll+`" : [{`
+								for label, nw := range s.(primitive.M){
+									// fmt.Printf(label)
+									// fmt.Println(label, nw)
+									// fmt.Println(reflect.TypeOf(nw))
+									// fmt.Println(label)
+									final+=`"`+label+`" : `+ strconv.Itoa(int(nw.(int32)))+`, `
+								}
+								final = final[:len(final) - 2]
+								final+=`}], `
+								final = final[:len(final) - 2]
+							case primitive.A:
+								fmt.Println("Idhar")
+								final += `"Participants" : [`
+								for last, w := range s.(primitive.A) {
+									final += `{ `
+									for mj, y := range w.(primitive.M) {
+										fmt.Println(reflect.TypeOf(mj), "KJ")
+										switch h := y.(type) {
+										case int32:
+											f := y.(int32)
+											final += `"RSVP" : ` + `"`+revrsvp[int(f)]+`"` + `, `
+										case string:
+											f := y.(string)
+											final += `"`+mj +`" : "` +f +`", `
+										default:
+											fmt.Println(h)
+										}
+									}
+									final = final[:len(final) - 2]
+									if last == len(s.(primitive.A))-1 {
+										final += `} `
+									} else {
+										final += `}, `
+									}
+								}
+								final += `] `
+							case int32:
+								f := s.(int32)
+								fmt.Println(strconv.Itoa(int(f)))
+								final += `"Id" : ` +strconv.Itoa(int(f)) +`, `
+							case string:
+								fmt.Println(s.(string))
+								final += `"Title" : "`+s.(string)+`", `
+							case primitive.ObjectID:
+								continue
+							case primitive.DateTime:
+								fmt.Println(s)
+							default:
+								fmt.Println("Default")
+								fmt.Println(t)
+							}
+						}
+						fmt.Fprintf(rw, JsonOut(`{`+final+`}`))
+					}
+					fmt.Println(final)
+					var raw map[string] interface{}
+					fmt.Println(json.Unmarshal([]byte(final), &raw))
+					fmt.Fprintf(rw, JsonOut(`{`+final+`}`))
+				}else if tt == nil{
+				fmt.Fprintf(rw, JsonOut(`{"Message":"The Format of Request Not correct"}`))
+				}
 			}
 		}
-		fmt.Fprintf(rw,JsonOut(`{"Message":"The Format of Request Not correct"}`))
 	}
 }
 
