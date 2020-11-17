@@ -5,13 +5,15 @@ import (
 )
 
 var rsvp map[string]int;
+var revrsvp map[int]string;
 func main() {
 	rsvp = make(map[string]int)
 	rsvp["Yes"]= 1
 	rsvp["No"] = 2
 	rsvp["Maybe"] = 3
 	rsvp["Not Answered"] = 4
-	fmt.Println("Hello")
+	revrsvp = make(map[int]string)
+	revrsvp = reverseMap(rsvp)
 	pump :=[]Partis{};
 	q :=Partis{
 		Name: "One",
@@ -19,7 +21,6 @@ func main() {
 		RSVP: 1,
 	};
 	pump = append(pump, q)
-	fmt.Println(pump)
 	meeting := Meeting{
 		Id:           0,
 		Title:        "Title 1",
@@ -44,4 +45,12 @@ func main() {
 	};
 	fmt.Println(meeting);
 	handler()
+}
+
+func reverseMap(m map[string]int) map[int]string {
+    n := make(map[int]string)
+    for k, v := range m {
+        n[v] = k
+    }
+    return n
 }
