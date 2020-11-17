@@ -198,7 +198,6 @@ func meetings(rw http.ResponseWriter, request *http.Request) {
 							final+=`}], `
 							final = final[:len(final) - 2]
 						case primitive.A:
-							fmt.Println("Idhar")
 							final += `"Participants" : [`
 							for last, w := range s.(primitive.A) {
 								final += `{ `
@@ -225,17 +224,14 @@ func meetings(rw http.ResponseWriter, request *http.Request) {
 							final += `] `
 						case int32:
 							f := s.(int32)
-							fmt.Println(strconv.Itoa(int(f)))
 							final += `"Id" : ` +strconv.Itoa(int(f)) +`, `
 						case string:
-							fmt.Println(s.(string))
 							final += `"Title" : "`+s.(string)+`", `
 						case primitive.ObjectID:
 							continue
 						case primitive.DateTime:
 							fmt.Println(s)
 						default:
-							fmt.Println("Default")
 							fmt.Println(t)
 						}
 					}
