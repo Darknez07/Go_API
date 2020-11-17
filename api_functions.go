@@ -8,8 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"sync"
 )
-
+var mutex = &sync.Mutex{}
 type retrival  struct {
 	id int `bson:"id"`
 	Title   string `bson:"title"`
@@ -37,24 +38,17 @@ func ScheduleMeet(meeting Meeting) int {
 	}
 	defer client.Disconnect(ctx)
 	dbs := client.Database("Custom").Collection("Meetings")
+	fmt.Println(CheckBooking(meeting))
 	if CheckBooking(meeting) {
+		mutex.Lock() //Mutex lock for inserting into db
 		Meetings, err := dbs.InsertOne(ctx, meeting)
 		if err != nil {
 			return -1
 		}
 		fmt.Println(Meetings)
+		mutex.Unlock() //Work
 		return 1
 	}
-	// opts := options.Find().SetSort(bson.D{{"Timestamp", -1}})
-	// sortCursor, err := dbs.Find(ctx, bson.M{}, opts)
-	// var output []bson.M
-	// if err = sortCursor.All(ctx, &output); err != nil {
-	// return -1
-	// }
-	// what := output[len(output)-1]
-	// panic, check := what["id"].(int32)
-	// fmt.Println(panic, check, what)
-	// return int(panic)
 	return -1
 }
 
@@ -100,12 +94,14 @@ func CheckBooking(meeting Meeting) bool {
 	defer cur.Close(ctx)
 	var out []bson.M
 	cur.All(ctx, &out)
-	fmt.Println(out)
+	fmt.Println("Check booking")
 	if len(out) == 0 {
 		return true
-	}else{
-		return false
 	}
+	for _, s := range out {
+		fmt.Println(s["participants"])
+	}
+	return false
 }
 
 func FindMeeting(s int) []bson.M{
@@ -222,4 +218,45 @@ func FindDatedMeeting(d1 Date, d2 Date) int {
 		fmt.Println(s)
 	}
 	return 1
+}
+
+func allMeetings() []bson.M{
+	clientOptions := options.Client().ApplyURI("mongodb+srv://12345:12345@cluster0.pexud.mongodb.net/First?retryWrites=true&w=majority")
+
+	// Connect to MongoDB
+	client, err := mongo.NewClient(clientOptions)
+
+	if err != nil {
+		return nil
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil
+	}
+	defer client.Disconnect(ctx)
+	dbs := client.Database("Custom").Collection("Meetings")
+	cur, err := dbs.Find(ctx, bson.M {})
+	if err !=nil {
+		return nil
+	}
+	var out []bson.M
+	cur.All(ctx, &out)
+	var outs retrival
+	cur.Decode(&outs)
+	fmt.Println(outs)
+	// for _, real := range out{
+	// 	fmt.Println(real)
+	// }
+	for _, s := range out {
+		fmt.Println(s["id"])
+		fmt.Println(s["title"])
+		news := reflect.TypeOf(s["participants"])
+		fmt.Println(news)
+		fmt.Println(s["starttime"])
+		fmt.Println(s["endtime"])
+		fmt.Println(s["timestamp"])
+	}
+	return out
 }
