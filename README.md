@@ -1,6 +1,6 @@
 # Go_API
 <ol>
-  <li>Employed the own <b> Data structure</b> for easy access and updation</li>
+  <li>Employed my own <b> Data structure</b> for easy access and updation</li>
   <li>POST to meetings is complete</li>
 <li>The date fomat is **DD/MM/YYYY HH:MM:SS**(24 hour format)
 or else error will be given</li>
