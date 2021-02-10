@@ -12,4 +12,5 @@ or else error will be given</li>
   <li>Meeting Id is improved</li>
   <li> Currently working on  all meetings function</li>
   </ol>
-<br>To run the program Do <h4>**go run .**</h4> in git directory
+<br>To run the program Do <h4>go run .</h4> in git directory
+ 
